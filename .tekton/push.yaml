@@ -1,0 +1,113 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: qway-openshift-pipeline
+spec:
+  finally:
+    - name: pack-and-push
+      params:
+        - name: SCRIPT
+          value:  cd <YOUR-GIT-REPO> && kit pack -t jozu.ml/<YOUR_JOZU_USERNAME>/<JOZU_REPO>:latest && kit push jozu.ml/<YOUR_JOZU_USERNAME>/<JOZU_REPO>:latest
+        - name: VERSION
+          value: '4.7'
+      taskRef:
+        kind: Task
+        name: openshift-client
+      taskRef:
+        kind: Task
+        name: openshift-client
+      workspaces:
+        - name: manifest-dir
+          workspace: workspace
+        - name: kubeconfig-dir
+          workspace: workspace
+
+  tasks:
+    - name: install-kit
+      params:
+        - name: SCRIPT
+          value: 'wget https://github.com/jozu-ai/kitops/releases/latest/download/kitops-linux-x86_64.tar.gz && tar -xzvf kitops-linux-x86_64.tar.gz && mv kit /usr/local/bin/ && kit version'
+        - name: VERSION
+          value: '4.7'
+      taskRef:
+        kind: Task
+        name: openshift-client
+      workspaces:
+        - name: manifest-dir
+          workspace: workspace
+        - name: kubeconfig-dir
+          workspace: workspace
+    - name: login-to-jozu
+      params:
+        - name: SCRIPT
+          value: kit login jozu.ml -u <JOZU_USERNAME> -p <JOZU_PASSWORD>
+        - name: VERSION
+          value: '4.7'
+      runAfter:
+        - install-kit
+      taskRef:
+        kind: Task
+        name: openshift-client
+      workspaces:
+        - name: manifest-dir
+          workspace: workspace
+        - name: kubeconfig-dir
+          workspace: workspace
+    - name: move-models-to-folder
+      params:
+        - name: SCRIPT
+          value: 'wget https://huggingface.co/Qwen/Qwen2-0.5B-Instruct-GGUF/resolve/main/qwen2-0_5b-instruct-q2_k.gguf && mv qwen2-0_5b-instruct-q2_k.gguf models'
+        - name: VERSION
+          value: '4.7'
+      runAfter:
+        - login-to-jozu
+      taskRef:
+        kind: Task
+        name: openshift-client
+      workspaces:
+        - name: manifest-dir
+          workspace: workspace
+        - name: kubeconfig-dir
+          workspace: workspace
+    - name: git-clone
+      params:
+        - name: url
+          value: '<YOUR-GIT-REPO>'
+        - name: revision
+          value: <YOUR-GIT-BRANCH>
+        - name: refspec
+          value: ''
+        - name: submodules
+          value: 'true'
+        - name: depth
+          value: '1'
+        - name: sslVerify
+          value: 'true'
+        - name: crtFileName
+          value: ca-bundle.crt
+        - name: subdirectory
+          value: ''
+        - name: sparseCheckoutDirectories
+          value: ''
+        - name: deleteExisting
+          value: 'true'
+        - name: httpProxy
+          value: ''
+        - name: httpsProxy
+          value: ''
+        - name: noProxy
+          value: ''
+        - name: verbose
+          value: 'true'
+        - name: gitInitImage
+          value: 'gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2'
+        - name: userHome
+          value: /home/git
+      taskRef:
+        kind: Task
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: workspace
+  workspaces:
+    - name: workspace
