@@ -8,7 +8,7 @@ pipeline {
         stage('install kitops') {
             steps {
                 cleanWs()
-                git(url: 'https://github.com/Techtacles/kitops-jenkins.git', branch: 'master')
+                git(url: 'https://github.com/shivay-couchbase/qwen.git', branch: 'main')
                 sh 'ls'
                 // sh 'curl -O https://github.com/jozu-ai/kitops/releases/latest/download/kitops-darwin-arm64.tar.gz'
                 // sh 'tar -xzvf kitops-darwin-arm64.tar.gz'
