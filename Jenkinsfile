@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('install kitops') {
             steps {
-                cleanWs()
+                // cleanWs()
                 git(url: 'https://github.com/Techtacles/kitops-jenkins.git', branch: 'master')
                 sh 'ls'
                 sh 'wget https://github.com/jozu-ai/kitops/releases/latest/download/kitops-linux-x86_64.tar.gz'
