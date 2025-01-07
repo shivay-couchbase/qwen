@@ -10,8 +10,8 @@ pipeline {
                 // cleanWs()
                 git(url: 'https://github.com/Techtacles/kitops-jenkins.git', branch: 'master')
                 sh 'ls'
-                sh 'curl https://github.com/jozu-ai/kitops/releases/latest/download/kitops-darwin-arm64.tar.gz'
-                sh 'tar -xzvf kitops-darwin-arm64.tar.gz'
+                sh 'curl https://github.com/jozu-ai/kitops/releases/latest/download/kitops-linux-x86_64.tar.gz'
+                sh 'tar -xzvf kitops-linux-x86_64.tar.gz'
                 sh './kit version'
             }
         }
